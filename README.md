@@ -298,8 +298,8 @@ hermes pairing approve weixin XXXX
 
 | 提示词 | 对应功能 | 耗时 |
 |--------|---------|------|
-| 帮我回测 BTC 的均线策略，最近一年 | MA 回测 `backtest.py ma` | 3-5秒 |
-| 用 RSI 策略回测一下 ETH | RSI 回测 `backtest.py rsi` | 3-5秒 |
+| 帮我回测 BTC 的均线策略，最近一年 | MA 回测 `backtest.py ma` | 5-10秒 |
+| 用 RSI 策略回测一下 ETH | RSI 回测 `backtest.py rsi` | 5-10秒 |
 
 ### 模拟交易
 

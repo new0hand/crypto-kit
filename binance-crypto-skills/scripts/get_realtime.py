@@ -161,12 +161,23 @@ def main():
     args = parser.parse_args()
 
     if args.all or not args.symbols:
-        # 主流币种概览
-        tickers = []
-        for sym in POPULAR_SYMBOLS:
-            t = get_ticker_24h(sym)
-            if t:
-                tickers.append(t)
+        # 主流币种概览 - 一次请求拿全部，本地过滤
+        try:
+            resp = spot_get("/api/v3/ticker/24hr", timeout=15)
+            resp.raise_for_status()
+            all_tickers = resp.json()
+            # 过滤出主流币种，按 POPULAR_SYMBOLS 顺序排列
+            popular_set = set(POPULAR_SYMBOLS)
+            order = {s: i for i, s in enumerate(POPULAR_SYMBOLS)}
+            tickers = [t for t in all_tickers if t.get('symbol') in popular_set]
+            tickers.sort(key=lambda t: order.get(t.get('symbol', ''), 99))
+        except Exception:
+            # 回退：逐个查询
+            tickers = []
+            for sym in POPULAR_SYMBOLS:
+                t = get_ticker_24h(sym)
+                if t:
+                    tickers.append(t)
         print(format_overview(tickers))
 
     else:
