@@ -1,0 +1,17 @@
+# 数据文件
+*.parquet
+*.db
+
+# 模拟交易账户
+simulate_account.json
+
+# 缓存
+.cache/binance_cache.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store

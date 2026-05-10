@@ -1,0 +1,41 @@
+# 币安加密货币 Skill 配置文件
+
+# 监控交易对
+watchlist:
+  - symbol: "BTCUSDT"
+    name: "比特币"
+  - symbol: "ETHUSDT"
+    name: "以太坊"
+
+# 模拟交易配置
+simulate:
+  initial_capital: 10000      # 初始模拟资金 (USDT)
+  fee_rate: 0.001             # 手续费率 (0.1%)
+
+# 定时任务配置
+scheduler:
+  enabled: true
+  # 数据更新时间（加密货币 7x24，按需设置）
+  data_update_time: "08:00"   # 每天早上更新
+  data_update_interval: 86400 # 更新间隔（秒），默认每天
+
+# 缓存配置（秒）
+cache:
+  realtime: 30                # 实时行情
+  kline_1d: 3600              # 日K线
+  kline_1h: 1800              # 小时K线
+  futures_kline: 1800         # 合约K线
+  funding_rate: 300           # 资金费率
+  open_interest: 300          # 持仓量
+
+# 报告输出
+output:
+  report_dir: "./reports"
+  format: "markdown"
+
+# 通知配置（可选）
+notification:
+  enabled: false
+  wechat:
+    enabled: false
+    webhook_url: ""
