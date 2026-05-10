@@ -235,7 +235,7 @@ binance-crypto-skill/
 pip3 install requests pandas numpy pyarrow
 
 # 从 GitHub 安装 Skill 到 Hermes
-hermes skills install <用户名>/binance-crypto-skill/binance-crypto-skills --force
+hermes skills install new0hand/binance-crypto-skill/binance-crypto-skills --force
 ```
 
 ### 下载历史数据（可选）
@@ -256,7 +256,7 @@ bash test_all.sh
 ### 更新 Skill
 
 ```bash
-hermes skills install <用户名>/binance-crypto-skill/binance-crypto-skills --force
+hermes skills install new0hand/binance-crypto-skill/binance-crypto-skills --force
 ```
 
 ### 微信网关
