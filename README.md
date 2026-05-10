@@ -285,7 +285,16 @@ hermes pairing approve weixin XXXX
 | 帮我看看 BTC 最近 60 天的 K 线 | 现货 K 线 `get_kline.py` | 2-3秒 |
 | ETH 4 小时 K 线最近一周的 | 小时 K 线 `get_kline.py -i 4h` | 2-3秒 |
 | 分析一下 BTC 的技术指标 | 技术指标 `calc_technical.py` | 2-3秒 |
-| BTC 的资金费率怎么样 | 资金费率 `get_futures_kline.py --funding` | 2-3秒 |
+
+### 合约数据
+
+| 提示词 | 对应功能 | 耗时 |
+|--------|---------|------|
+| BTC 合约最近 30 天的 K 线 | 合约 K 线 `get_futures_kline.py` | 2-3秒 |
+| ETH 合约 4 小时 K 线 | 合约小时 K 线 `get_futures_kline.py -i 4h` | 2-3秒 |
+| BTC 的资金费率怎么样 | 资金费率历史 `get_futures_kline.py --funding` | 2-3秒 |
+| 看看 BTC 的持仓量 | 持仓量 `get_futures_kline.py --oi` | 2-3秒 |
+| ETH 合约资金费率最近一个月 | 资金费率 `get_futures_kline.py --funding` | 2-3秒 |
 
 ### 综合分析
 
