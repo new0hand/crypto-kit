@@ -1,4 +1,4 @@
-# binance-crypto-skill
+# crypto-kit
 
 币安加密货币数据分析工具箱。配合 Hermes Agent 使用，支持微信对话交互。
 
@@ -203,7 +203,7 @@ bash test_other_coins.sh
 ## 项目结构
 
 ```
-binance-crypto-skill/
+crypto-kit/
 ├── README.md                          # 本文件
 ├── test_all.sh                        # 全量测试（30项）
 ├── test_other_coins.sh                # 其他币种测试
@@ -235,15 +235,15 @@ binance-crypto-skill/
 pip3 install requests pandas numpy pyarrow
 
 # 从 GitHub 安装 Skill 到 Hermes
-hermes skills install new0hand/binance-crypto-skill/binance-crypto-skills --force
+hermes skills install new0hand/crypto-kit/binance-crypto-skills --force
 ```
 
 ### 下载历史数据（可选）
 
 ```bash
 # 克隆仓库
-git clone https://github.com/<用户名>/binance-crypto-skill.git
-cd binance-crypto-skill/binance-crypto-skills/local
+git clone https://github.com/<用户名>/crypto-kit.git
+cd crypto-kit/binance-crypto-skills/local
 
 # 下载 BTC/ETH 两年日线
 python3 download_history.py
@@ -256,7 +256,7 @@ bash test_all.sh
 ### 更新 Skill
 
 ```bash
-hermes skills install new0hand/binance-crypto-skill/binance-crypto-skills --force
+hermes skills install new0hand/crypto-kit/binance-crypto-skills --force
 ```
 
 ### 微信网关
