@@ -325,17 +325,28 @@ hermes pairing approve weixin XXXX
 | 看看我的模拟账户 | 账户状态 `simulate_trade.py status` | 1-2秒 |
 | 查看交易记录 | 交易历史 `simulate_trade.py history` | 秒级 |
 
-## 定时更新（crontab）
+## 定时更新（可选）
 
-加密货币 7×24 小时交易，建议每天更新一次：
+加密货币 7×24 小时交易，建议每天更新一次本地数据：
 
 ```bash
-# 打开 crontab
 crontab -e
-
-# 每天凌晨 2 点增量更新
-0 2 * * * cd ~/.hermes/skills/crypto-kit-skills/local && /usr/bin/python3 download_history.py --update >> /tmp/crypto-update.log 2>&1
 ```
+
+添加以下内容（北京时间 18:00，根据你的时区换算）：
+
+```bash
+# 北京时间（UTC+8）：
+0 18 * * * cd ~/.hermes/skills/crypto-kit-skills/local && /usr/bin/python3 download_history.py --update >> /tmp/crypto-update.log 2>&1
+
+# 夏威夷时间（UTC-10，北京18:00 = 夏威夷00:00）：
+0 0 * * * cd ~/.hermes/skills/crypto-kit-skills/local && /usr/bin/python3 download_history.py --update >> /tmp/crypto-update.log 2>&1
+```
+
+**说明**：
+- 加密货币无休市，每天都更新（不限工作日）
+- 18:00 更新是为了和 A 股/期货/港股统一时间，方便管理
+- 如不需要本地数据（只用 API 实时查询），可不配定时任务
 
 ### macOS 注意事项
 
