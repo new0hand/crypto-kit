@@ -112,10 +112,16 @@ cd crypto-kit-skills/local
 # 下载 BTC/ETH 日线（默认2年）
 python3 download_history.py
 
+# 下载 49 只主流币全量日线（上市至今，约8分钟）
+python3 download_history.py --all
+
+# 下载 49 只主流币最近2年日线
+python3 download_history.py --all --days 730
+
 # 指定币种和周期
 python3 download_history.py --symbols BTCUSDT ETHUSDT SOLUSDT --interval 1h --days 90
 
-# 增量更新
+# 增量更新（已下载的币种）
 python3 download_history.py --update
 
 # 下载合约数据
@@ -337,11 +343,18 @@ macOS 需要给 cron 授权"完全磁盘访问权限"：系统设置 → 隐私�
 
 ## 支持的交易对
 
-所有币安 USDT 交易对均可使用，常用的包括：
+所有币安 USDT 交易对均可使用。输入时可以省略 USDT 后缀，如 `BTC` 等价于 `BTCUSDT`。
 
-BTCUSDT（比特币）、ETHUSDT（以太坊）、BNBUSDT（币安币）、SOLUSDT（Solana）、XRPUSDT（瑞波币）、DOGEUSDT（狗狗币）、ADAUSDT（ADA）、AVAXUSDT（AVAX）、DOTUSDT（波卡）、LINKUSDT（Chainlink）
+### 主流币列表（`--all` 下载，49 只）
 
-输入时可以省略 USDT 后缀，如 `BTC` 等价于 `BTCUSDT`。
+| 分类 | 币种 |
+|------|------|
+| 市值 Top 10 | BTC, ETH, BNB, SOL, XRP, DOGE, ADA, TRX, AVAX, LINK |
+| 市值 11-25 | DOT, MATIC, SHIB, LTC, NEAR, UNI, APT, ICP, ETC, FIL, ATOM, XLM, ARB, OP, SUI |
+| 市值 26-40 | INJ, FTM, TIA, SEI, RUNE, GRT, AAVE, MKR, ALGO, SAND, AXS, MANA, SNX, LDO, APE |
+| AI / 新叙事 | FET, RENDER, WLD |
+| Meme | PEPE, FLOKI |
+| 其他主流 | EOS, VET, THETA, XTZ |
 
 ## 免责声明
 
