@@ -1,6 +1,6 @@
 #!/bin/bash
 # 测试其他币种
-cd "$(dirname "$0")/binance-crypto-skills/scripts"
+cd "$(dirname "$0")/crypto-kit-skills/scripts"
 
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'

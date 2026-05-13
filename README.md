@@ -25,7 +25,7 @@ pip3 install requests pandas numpy pyarrow
 ### 1. 实时行情
 
 ```bash
-cd binance-crypto-skills/scripts
+cd crypto-kit-skills/scripts
 
 # 单币种行情
 python3 get_realtime.py BTCUSDT
@@ -107,7 +107,7 @@ python3 simulate_trade.py history
 ### 6. 历史数据下载
 
 ```bash
-cd binance-crypto-skills/local
+cd crypto-kit-skills/local
 
 # 下载 BTC/ETH 日线（默认2年）
 python3 download_history.py
@@ -167,7 +167,7 @@ testnet 的行情价格、资金费率与主网同步，持仓量历史 endpoint
 | 小时 K 线 | 30 分钟 |
 | 资金费率/持仓量 | 5 分钟 |
 
-如遇数据异常，先删缓存再重试：`rm binance-crypto-skills/.cache/binance_cache.db`
+如遇数据异常，先删缓存再重试：`rm crypto-kit-skills/.cache/binance_cache.db`
 
 ## 测试
 
@@ -207,7 +207,7 @@ crypto-kit/
 ├── README.md                          # 本文件
 ├── test_all.sh                        # 全量测试（30项）
 ├── test_other_coins.sh                # 其他币种测试
-└── binance-crypto-skills/             # Hermes Skill 目录（hermes skills install 安装这个）
+└── crypto-kit-skills/             # Hermes Skill 目录（hermes skills install 安装这个）
     ├── SKILL.md                       # Skill 定义（Hermes 读取）
     ├── config.yaml                    # 配置文件
     ├── scripts/                       # 数据查询和分析脚本
@@ -235,7 +235,7 @@ crypto-kit/
 pip3 install requests pandas numpy pyarrow
 
 # 从 GitHub 安装 Skill 到 Hermes
-hermes skills install new0hand/crypto-kit/binance-crypto-skills --force
+hermes skills install new0hand/crypto-kit/crypto-kit-skills --force
 ```
 
 ### 下载历史数据（可选）
@@ -243,7 +243,7 @@ hermes skills install new0hand/crypto-kit/binance-crypto-skills --force
 ```bash
 # 克隆仓库
 git clone https://github.com/<用户名>/crypto-kit.git
-cd crypto-kit/binance-crypto-skills/local
+cd crypto-kit/crypto-kit-skills/local
 
 # 下载 BTC/ETH 两年日线
 python3 download_history.py
@@ -256,7 +256,7 @@ bash test_all.sh
 ### 更新 Skill
 
 ```bash
-hermes skills install new0hand/crypto-kit/binance-crypto-skills --force
+hermes skills install new0hand/crypto-kit/crypto-kit-skills --force
 ```
 
 ### 微信网关
@@ -328,7 +328,7 @@ hermes pairing approve weixin XXXX
 crontab -e
 
 # 每天凌晨 2 点增量更新
-0 2 * * * cd ~/.hermes/skills/binance-crypto-skills/local && /usr/bin/python3 download_history.py --update >> /tmp/crypto-update.log 2>&1
+0 2 * * * cd ~/.hermes/skills/crypto-kit-skills/local && /usr/bin/python3 download_history.py --update >> /tmp/crypto-update.log 2>&1
 ```
 
 ### macOS 注意事项

@@ -5,7 +5,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SKILL_DIR="$SCRIPT_DIR/binance-crypto-skills"
+SKILL_DIR="$SCRIPT_DIR/crypto-kit-skills"
 SCRIPTS_DIR="$SKILL_DIR/scripts"
 LOCAL_DIR="$SKILL_DIR/local"
 

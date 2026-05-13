@@ -1,5 +1,5 @@
 ---
-name: binance-crypto-skills
+name: crypto-kit-skills
 description: 使用币安公开 API 获取和分析加密货币数据。支持：BTC/ETH 实时行情、现货和合约 K 线、技术指标分析、策略回测、模拟交易、资金费率、持仓量分析。当用户需要查询加密货币价格、分析 BTC/ETH 走势、回测交易策略、进行模拟交易时使用此 skill。
 ---
 
@@ -203,7 +203,7 @@ python analyze_crypto.py BTCUSDT -o 分析报告.md
 ## 文件结构
 
 ```
-binance-crypto-skills/
+crypto-kit-skills/
 ├── SKILL.md                     # 本文档
 ├── config.yaml                  # 配置文件
 ├── scripts/                     # 数据查询和分析脚本
