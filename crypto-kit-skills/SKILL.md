@@ -68,6 +68,8 @@ python simulate_trade.py status
 | `calc_technical.py` | 技术指标（MA/MACD/RSI/KDJ/BOLL） | `python calc_technical.py BTCUSDT` |
 | `backtest.py ma` | MA均线交叉回测 | `python backtest.py ma BTCUSDT --days 365` |
 | `backtest.py rsi` | RSI超买超卖回测 | `python backtest.py rsi BTCUSDT` |
+| `backtest.py ma --all` | 批量回测49只主流币（需本地数据） | `python backtest.py ma --all --days 730` |
+| `backtest.py ma --all --top 10` | 只显示收益前10名 | `python backtest.py ma --all --top 10` |
 
 ### 交易脚本
 
@@ -79,14 +81,31 @@ python simulate_trade.py status
 | `simulate_trade.py history` | 交易历史 | `python simulate_trade.py history` |
 | `simulate_trade.py reset` | 重置模拟账户 | `python simulate_trade.py reset --capital 50000` |
 
-### 本地数据工具（local/ 目录）
+### 本地数据工具
 
-| 脚本 | 功能 | 示例 |
-|------|------|------|
-| `local/download_history.py` | 下载历史数据 | `python local/download_history.py` |
-| `local/download_history.py --update` | 增量更新 | `python local/download_history.py --update` |
-| `local/download_history.py --futures` | 下载合约数据 | `python local/download_history.py --futures` |
-| `local/download_history.py --summary` | 数据摘要 | `python local/download_history.py --summary` |
+> **路径注意**：scripts/ 下的脚本用 `cd scripts` 后执行；local/ 下的脚本用 `cd local` 后执行。两个目录是平级的，不要混用。
+
+```bash
+cd local
+
+# 下载 49 只主流币全量日线（上市至今，约8分钟）
+python download_history.py --all
+
+# 下载 49 只主流币最近2年日线
+python download_history.py --all --days 730
+
+# 下载指定币种
+python download_history.py --symbols BTCUSDT ETHUSDT SOLUSDT
+
+# 增量更新（已下载的币种）
+python download_history.py --update
+
+# 下载合约数据
+python download_history.py --futures
+
+# 查看数据摘要
+python download_history.py --summary
+```
 
 ## 支持的交易对
 
@@ -140,7 +159,18 @@ python backtest.py ma BTCUSDT --fast 7 --slow 25 --days 365
 
 # RSI 超买超卖策略
 python backtest.py rsi BTCUSDT --oversold 30 --overbought 70
+
+# 批量回测所有主流币（49只，按收益排名）
+python backtest.py ma --all --days 730
+
+# 只看收益最高的前10
+python backtest.py ma --all --days 730 --top 10
+
+# RSI 策略批量回测
+python backtest.py rsi --all --days 365
 ```
+
+> **批量回测说明**：`--all` 会回测 49 只主流币，优先使用本地 Parquet 数据（秒级），无本地数据时从 API 获取（较慢）。建议先运行 `cd local && python download_history.py --all` 下载本地数据。
 
 ### 4. 模拟交易
 

@@ -80,6 +80,15 @@ python3 backtest.py ma BTCUSDT --fast 7 --slow 25 --days 365
 
 # RSI 超买超卖回测
 python3 backtest.py rsi BTCUSDT --days 180
+
+# 批量回测 49 只主流币（需先下载本地数据，见第7节）
+python3 backtest.py ma --all --days 730
+
+# 只看收益最高的前 10
+python3 backtest.py ma --all --days 730 --top 10
+
+# RSI 策略批量回测
+python3 backtest.py rsi --all --days 365
 ```
 
 ### 5. 模拟交易
@@ -104,7 +113,7 @@ python3 simulate_trade.py status
 python3 simulate_trade.py history
 ```
 
-### 6. 历史数据下载
+### 6. 历史数据下载（本地数据库）
 
 ```bash
 cd crypto-kit-skills/local
@@ -129,6 +138,90 @@ python3 download_history.py --futures
 
 # 查看数据摘要
 python3 download_history.py --summary
+```
+
+### 7. 本地数据库测试
+
+下载完本地数据后，可以用以下命令验证数据和测试本地加速效果。
+
+#### 验证数据
+
+```bash
+cd crypto-kit-skills/local
+
+# 查看数据摘要（文件数、日期范围、大小）
+python3 download_history.py --summary
+
+# 增量更新（只拉缺失的新数据，秒级完成）
+python3 download_history.py --update
+```
+
+#### 测试本地数据加速
+
+K 线脚本 `get_kline.py` 内置本地优先逻辑：自动检查 `data/` 目录下的 Parquet 文件，有本地数据直接读取（毫秒级），没有才调 API。
+
+```bash
+cd crypto-kit-skills/scripts
+
+# 查 BTC K 线 —— 有本地数据时输出会显示 [本地数据]
+python3 get_kline.py BTCUSDT --days 365
+
+# 查冷门币 K 线 —— 无本地数据时自动调 API
+python3 get_kline.py DOGEUSDT --days 30
+```
+
+#### 批量回测（本地数据的核心用途）
+
+本地数据最大的价值是支持 49 只主流币批量回测，3 秒出结果（API 方式需要 15+ 分钟）：
+
+```bash
+cd crypto-kit-skills/scripts
+
+# MA 均线策略批量回测（49只币，按收益排名）
+python3 backtest.py ma --all --days 730
+
+# 只看收益最高的前 10
+python3 backtest.py ma --all --top 10
+
+# RSI 策略批量回测
+python3 backtest.py rsi --all --days 365
+
+# RSI 策略收益前 10
+python3 backtest.py rsi --all --days 365 --top 10
+```
+
+输出示例：
+
+```
+# MA(7/25) 均线交叉策略 - 49 只主流币回测排名
+
+| 排名 | 币种      | 策略收益   | 买入持有  | 超额收益   | 交易次数 | 胜率   | 最大回撤  |
+|------|-----------|-----------|----------|-----------|---------|--------|----------|
+| 1    | XLMUSDT   | +100.52%  | -12.34%  | +112.86%  | 24      | 54.2%  | -18.5%   |
+| 2    | XRPUSDT   | +89.31%   | +15.67%  | +73.64%   | 22      | 50.0%  | -22.1%   |
+| ...  | ...       | ...       | ...      | ...       | ...     | ...    | ...      |
+
+统计: 参与 49/49, 盈利 38/49 (77.6%), 跑赢持有 44/49 (89.8%)
+耗时: 3.2 秒
+```
+
+#### 完整测试流程（给客户演示用）
+
+```bash
+# 第一步：下载数据（首次约8分钟，之后增量更新秒级）
+cd crypto-kit-skills/local
+python3 download_history.py --all
+
+# 第二步：验证数据
+python3 download_history.py --summary
+
+# 第三步：批量回测（3秒出结果）
+cd ../scripts
+python3 backtest.py ma --all --days 730
+
+# 第四步：单币种深入分析
+python3 analyze_crypto.py BTCUSDT
+python3 backtest.py ma BTCUSDT --days 365
 ```
 
 ## API 域名与网络
@@ -244,20 +337,25 @@ pip3 install requests pandas numpy pyarrow
 hermes skills install new0hand/crypto-kit/crypto-kit-skills --force
 ```
 
-### 下载历史数据（可选）
+### 下载历史数据（推荐）
+
+本地数据让批量回测从 15 分钟缩短到 3 秒，强烈建议下载。
 
 ```bash
-# 克隆仓库
-git clone https://github.com/<用户名>/crypto-kit.git
-cd crypto-kit/crypto-kit-skills/local
+cd ~/.hermes/skills/crypto-kit-skills/local
 
-# 下载 BTC/ETH 两年日线
-python3 download_history.py
+# 下载 49 只主流币全量日线（首次约8分钟）
+python3 download_history.py --all
 
-# 验证
-cd ../..
-bash test_all.sh
+# 验证数据
+python3 download_history.py --summary
+
+# 测试批量回测（3秒出结果）
+cd ../scripts
+python3 backtest.py ma --all --days 730
 ```
+
+> **注意**：`hermes skills install --force` 会清空 skill 目录（包括 data/），重装后需要重新下载数据。
 
 ### 更新 Skill
 
@@ -315,6 +413,9 @@ hermes pairing approve weixin XXXX
 |--------|---------|------|
 | 帮我回测 BTC 的均线策略，最近一年 | MA 回测 `backtest.py ma` | 5-10秒 |
 | 用 RSI 策略回测一下 ETH | RSI 回测 `backtest.py rsi` | 5-10秒 |
+| 帮我把所有主流币都跑一遍 MA 策略，看哪个收益最好 | 批量回测 `backtest.py ma --all` | 3秒（本地数据） |
+| 49 只主流币 RSI 策略回测排名 | 批量回测 `backtest.py rsi --all` | 3秒（本地数据） |
+| 哪些币用均线策略能跑赢持有？ | 批量回测 `backtest.py ma --all` | 3秒（本地数据） |
 
 ### 模拟交易
 

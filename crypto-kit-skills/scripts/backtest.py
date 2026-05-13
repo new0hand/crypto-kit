@@ -12,6 +12,8 @@
     python backtest.py ma ETHUSDT --fast 7 --slow 25
     python backtest.py rsi BTCUSDT --oversold 30 --overbought 70
     python backtest.py ma BTCUSDT --interval 4h --days 90
+    python backtest.py ma --all                          # 批量回测 49 只主流币
+    python backtest.py ma --all --days 730 --top 10      # 最近2年，只显示前10
 """
 import argparse
 import os
@@ -28,9 +30,21 @@ except ImportError:
     sys.exit(1)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+LOCAL_DIR = os.path.join(SCRIPT_DIR, "..", "local")
+DATA_DIR = os.path.join(SCRIPT_DIR, "..", "data")
 sys.path.insert(0, SCRIPT_DIR)
+sys.path.insert(0, LOCAL_DIR)
 from get_kline import get_kline
 from calc_technical import calc_ma, calc_rsi
+
+# 主流币列表（从 download_history.py 同步）
+try:
+    from download_history import MAINSTREAM_SYMBOLS
+except ImportError:
+    MAINSTREAM_SYMBOLS = [
+        "BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT",
+        "DOGEUSDT", "ADAUSDT", "TRXUSDT", "AVAXUSDT", "LINKUSDT",
+    ]
 
 
 def backtest_ma(df: pd.DataFrame, fast: int = 7, slow: int = 25,
@@ -249,10 +263,122 @@ def format_result(result: dict, symbol: str) -> str:
     return "\n".join(lines)
 
 
+def backtest_all(strategy: str, interval: str, days: int, capital: float,
+                 fast: int = 7, slow: int = 25,
+                 rsi_period: int = 14, oversold: int = 30, overbought: int = 70,
+                 top: int = 0) -> str:
+    """批量回测所有主流币，输出对比排名表"""
+    import time as _time
+
+    # 检查本地数据
+    local_count = 0
+    if os.path.exists(DATA_DIR):
+        local_count = len([f for f in os.listdir(DATA_DIR) if f.endswith('.parquet')])
+
+    symbols = MAINSTREAM_SYMBOLS
+    strategy_name = f"MA{fast}/{slow}" if strategy == 'ma' else f"RSI{rsi_period}"
+
+    print(f"# 主流币批量回测\n")
+    print(f"**策略**: {strategy_name}  |  **周期**: {interval}  |  **回测天数**: {days}  |  **本地数据**: {local_count} 只")
+    print(f"**币种数**: {len(symbols)}")
+    print()
+
+    results = []
+    t0 = _time.time()
+
+    for i, sym in enumerate(symbols, 1):
+        sym = sym.upper()
+        short = sym.replace('USDT', '')
+        # 静默获取数据
+        sys.stdout = open(os.devnull, 'w')
+        try:
+            df = get_kline(sym, interval, days)
+        finally:
+            sys.stdout = sys.__stdout__
+
+        if df is None or len(df) < 30:
+            print(f"  [{i}/{len(symbols)}] {short:<8} ⏭ 数据不足")
+            continue
+
+        if strategy == 'ma':
+            r = backtest_ma(df, fast=fast, slow=slow, initial_capital=capital)
+        else:
+            r = backtest_rsi(df, period=rsi_period, oversold=oversold,
+                             overbought=overbought, initial_capital=capital)
+
+        if 'error' in r:
+            print(f"  [{i}/{len(symbols)}] {short:<8} ❌ {r['error']}")
+            continue
+
+        r['symbol'] = short
+        results.append(r)
+
+        trend = "🟢" if r['total_return'] >= 0 else "🔴"
+        src = "本地" if local_count > 0 else "API"
+        print(f"  [{i}/{len(symbols)}] {short:<8} {trend} {r['total_return']:>+8.2f}%  (持有 {r['buy_hold_return']:>+.1f}%)  [{src}]")
+
+    elapsed = _time.time() - t0
+
+    if not results:
+        return "没有有效回测结果"
+
+    # 按收益排序
+    results.sort(key=lambda x: x['total_return'], reverse=True)
+
+    # 输出排名表
+    lines = [
+        f"\n{'='*70}",
+        f"\n## {strategy_name} 策略回测排名（{results[0].get('start_date', '')} ~ {results[0].get('end_date', '')}）\n",
+    ]
+
+    display = results[:top] if top > 0 else results
+
+    lines.append("| 排名 | 币种 | 策略收益 | 买入持有 | 超额收益 | 交易次数 | 胜率 | 最大回撤 |")
+    lines.append("|------|------|----------|----------|----------|----------|------|----------|")
+
+    for rank, r in enumerate(display, 1):
+        trend = "🟢" if r['total_return'] >= 0 else "🔴"
+        excess = r['total_return'] - r['buy_hold_return']
+        excess_icon = "📈" if excess > 0 else "📉"
+        lines.append(
+            f"| {rank} | **{r['symbol']}** | {trend} {r['total_return']:+.2f}% "
+            f"| {r['buy_hold_return']:+.2f}% | {excess_icon} {excess:+.2f}% "
+            f"| {r['trades_count']} | {r['win_rate']:.0f}% | {r['max_drawdown']:.1f}% |"
+        )
+
+    if top > 0 and len(results) > top:
+        lines.append(f"\n> 仅显示前 {top} 名，共 {len(results)} 只币种参与回测")
+
+    # 统计摘要
+    avg_return = sum(r['total_return'] for r in results) / len(results)
+    positive = sum(1 for r in results if r['total_return'] > 0)
+    beat_hold = sum(1 for r in results if r['total_return'] > r['buy_hold_return'])
+
+    lines.append(f"\n## 统计摘要\n")
+    lines.append(f"| 指标 | 数值 |")
+    lines.append(f"|------|------|")
+    lines.append(f"| 参与回测 | {len(results)} 只 |")
+    lines.append(f"| 策略盈利 | {positive}/{len(results)} ({positive/len(results)*100:.0f}%) |")
+    lines.append(f"| 跑赢持有 | {beat_hold}/{len(results)} ({beat_hold/len(results)*100:.0f}%) |")
+    lines.append(f"| 平均策略收益 | {avg_return:+.2f}% |")
+    lines.append(f"| 最佳 | {results[0]['symbol']} ({results[0]['total_return']:+.2f}%) |")
+    lines.append(f"| 最差 | {results[-1]['symbol']} ({results[-1]['total_return']:+.2f}%) |")
+    lines.append(f"| 耗时 | {elapsed:.0f} 秒 |")
+
+    lines.append("\n---")
+    lines.append("> 以上回测结果仅供参考，历史表现不代表未来收益。")
+
+    output = "\n".join(lines)
+    print(output)
+    return output
+
+
 def main():
     parser = argparse.ArgumentParser(description='加密货币策略回测')
     parser.add_argument('strategy', choices=['ma', 'rsi'], help='策略: ma(均线交叉), rsi(RSI)')
-    parser.add_argument('symbol', help='交易对 (如 BTCUSDT)')
+    parser.add_argument('symbol', nargs='?', default=None, help='交易对 (如 BTCUSDT)')
+    parser.add_argument('--all', action='store_true', help=f'批量回测 {len(MAINSTREAM_SYMBOLS)} 只主流币')
+    parser.add_argument('--top', type=int, default=0, help='只显示前N名 (默认全部)')
     parser.add_argument('--interval', '-i', default='1d', help='K线周期 (默认 1d)')
     parser.add_argument('--days', type=int, default=365, help='回测天数 (默认 365)')
     parser.add_argument('--capital', type=float, default=10000, help='初始资金 (默认 10000)')
@@ -266,6 +392,23 @@ def main():
     parser.add_argument('-o', '--output', help='输出文件路径')
 
     args = parser.parse_args()
+
+    # 批量回测
+    if getattr(args, 'all'):
+        output = backtest_all(
+            args.strategy, args.interval, args.days, args.capital,
+            fast=args.fast, slow=args.slow,
+            rsi_period=args.rsi_period, oversold=args.oversold,
+            overbought=args.overbought, top=args.top
+        )
+        if args.output:
+            with open(args.output, 'w', encoding='utf-8') as f:
+                f.write(output)
+            print(f"\n已保存至: {args.output}")
+        return
+
+    if not args.symbol:
+        parser.error("请指定交易对 (如 BTCUSDT) 或使用 --all 批量回测")
 
     symbol = args.symbol.upper()
     if not symbol.endswith('USDT'):
